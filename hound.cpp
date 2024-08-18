@@ -7,8 +7,12 @@
 using namespace std;
 using namespace filesystem;
 
-int help();
-int typeIdentifier(string fsname);
+
+// Things left to do:
+// 	Add a progress bar.
+// 	Add the title feature.
+
+string version = "1.0.0";
 int infos[4] = {
 	0,	// chomp
 	1,	// angry
@@ -22,23 +26,35 @@ int destroyFile(string filename) {
 	string shred = "shred -n " + angry_lvl + " \"" + filename + "\" > /dev/null"; 
 	string eat = "rm " + filename + " > /dev/null";
 
+
 	// shred
 	int shredded = !system(shred.c_str());
 	if (!shredded) {
-		cout << CRED << "The file couldn't be defaced!" << CDEF << endl;
-		return 1;
+		cout << CRED << "! " << CGREEN << filename << CRED << " ! : cannot be defaced!" << CDEF << endl;
+		return ERR;
 	} 
+
+	// verbose?
+	if (infos[2]==1) {
+		cout << CGREEN << filename << CDEF << " : defaced!" << endl;
+	}
+
 
 	// remove
 	if (infos[0] == 0) {
 		int eaten = !system(eat.c_str());
 		if (!eaten) {
-			cout << CRED << "The file couldn't be deleted!" << CDEF << endl;
-			return 1;
+			cout << CRED << "! " << CGREEN << filename << CRED << " ! : cannot be removed!" << CDEF << endl;
+			return ERR;
 		}
 	}
-	
-	return 0;
+
+	// verbose?
+	if (infos[2]==1) {
+		cout << CGREEN << filename << CDEF " : removed!" << endl;
+	}
+
+	return SUCCESS;
 }
 
 int destroyTargets(vector<string> files) {
@@ -47,7 +63,7 @@ int destroyTargets(vector<string> files) {
 		typeIdentifier(file);
 	}
 
-	return 0;
+	return SUCCESS;
 } 
 
 int destroyFolder(string foldername) {
@@ -61,22 +77,29 @@ int destroyFolder(string foldername) {
 	}
 	destroyTargets(files);
 
+
 	// destroy the folder
 	if (infos[0] == 0) {
 		string eat = "rm -r \"" + foldername + "\" > /dev/null";
 		int eaten = !system(eat.c_str());
 		if (!eaten) {
-			cout << CRED << "The folder '" << foldername << "' couldn't be removed!" << CDEF << endl;
-			return 1;
+			cout << CRED << "! " << CCYAN << foldername << CRED << " ! : cannot be removed!" << CDEF << endl;
+			return ERR;
 		}
 	}
-	return 0;	
+
+	// verbose?
+	if (infos[2]==1) {
+		cout << CCYAN << foldername << CDEF << " : removed!" << endl;
+	}
+
+	return SUCCESS;	
 }
 
 int typeIdentifier(string fsname) {
 	if (!exists(fsname)) {
 		cout << CRED << "The target '" << fsname << "' doesn't exist!" << CDEF << endl;
-		return 1;
+		return ERR;
 	}
 
 	if (is_directory(fsname)) {
@@ -94,28 +117,40 @@ int main(int argCount, char* argValue[]) {
 	// process all the arguments.
 	for (int i=1; i<argCount; i++) {
 		
-		if (argValue[i][0] != '-') {
+		string argument = argValue[i];
+		if (argument[0] != '-') {
 			// add the filepath to the list of files to destroy.
 			files.push_back(argValue[i]);
 			continue;
 		}
 
 		// check if the argument call for help.
-		if (!strcmp(argValue[i], "-h") || !strcmp(argValue[i], "--help")) {
+		if (argument == "-h" || argument == "--help") {
 			return help();
 		}
 
 		// check if the argument call for chomp.
-		if (!strcmp(argValue[i], "-c") || !strcmp(argValue[i], "--chomp")) {
+		if (argument == "-c" || argument == "--chomp") {
 			infos[0] = 1;
 			continue;
 		}
 
+		// check if the argument call for verbose.
+		if (argument == "-v" || argument == "--verbose") {
+			infos[2] = 1;
+			continue;
+		}
+
+		if (argument == "--version") {
+			cout << "Hound version is : " << CCYAN << version << CDEF << endl;
+			return SUCCESS;
+		}
+
 		// check if the argument call for angry
-		if (!strcmp(argValue[i], "-a") || !strcmp(argValue[i], "--angry")) {
+		if (argument == "-a" || argument == "--angry") {
 			if (i+1 > argCount) {
 				cout << CRED << "Please set a value for the angry value!" << CDEF << endl;
-				return 1;
+				return ERR;
 			}
 
 			int value;
@@ -126,19 +161,20 @@ int main(int argCount, char* argValue[]) {
 			} 
 			else {
 				cout << CRED << "Please set a correct angry value!" << CDEF << endl;
-				return 1;
-	 		}
+				return ERR;
+			}
+			continue;
 		}
 
 		cout << CRED << "This flag doesn't exist!" << CDEF << endl;
 		cout << "You can check the flags with : " << CHIGH << CBOLD << "hound --help" << CDEF << endl;
-		return 1;
+		return ERR;
 	}
 
 	// destroy all the targets in the list.
 	destroyTargets(files);
 	
-	return 0;
+	return SUCCESS;
 }
 
 
