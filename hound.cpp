@@ -142,7 +142,7 @@ int main(int argCount, char* argValue[]) {
 		}
 
 		if (argument == "--version") {
-			cout << "Hound version is : " << CCYAN << version << CDEF << endl;
+			cout << "Hound's version is : " << CCYAN << version << CDEF << endl;
 			return SUCCESS;
 		}
 
