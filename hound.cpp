@@ -12,7 +12,7 @@ using namespace filesystem;
 // 	Add a progress bar.
 // 	Add the title feature.
 
-string version = "1.0.0";
+string version = "1.0.0 [Beta]";
 int infos[4] = {
 	0,	// chomp
 	1,	// angry

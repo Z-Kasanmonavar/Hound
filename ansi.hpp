@@ -12,6 +12,9 @@ using namespace std;
 #define CUND "\033[4m"		// 5: Underline
 #define CBOLD "\033[1m"		// 6: Bold
 
+
+int help();
+int typeIdentifier(string fsname);
 string houndIco = 
 "\033[1;91m"
 "        :.^^~^^:....                                        \n"
